@@ -14,6 +14,6 @@ class Classroom:
         self.semester = semester
         self.students = students if students else []
 
-    def add_student_to_class(self, student):
+    def add_student(self, student):
         self.students.append(student)
         return self.students
