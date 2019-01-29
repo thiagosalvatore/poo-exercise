@@ -8,3 +8,9 @@ class GradeService:
         student_teacher_classes = list(student_teacher_classes)
         classes_semester = filter(lambda c: c.year == year and c.semester == semester,
                                   student_teacher_classes)
+
+        grade = 0
+        for q in student.quizzes:
+            if q.quiz.classroom in classes_semester:
+                grade += q.grade
+        return grade

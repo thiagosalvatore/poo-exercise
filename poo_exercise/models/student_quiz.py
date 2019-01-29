@@ -12,8 +12,11 @@ class StudentQuiz:
         self.answered = False
         self.grade = 0
         self.answers = []
+        self.student.quizzes.append(self)
 
     def submit_answers(self, answers):
+        if len(answers) != len(self.quiz.questions):
+            raise Exception('Less answers than options')
         for index, answer in enumerate(answers):
             if answer and answer not in self.quiz.questions[index].options:
                 return None
