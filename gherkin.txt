@@ -1,0 +1,140 @@
+Feature: Create a classroom
+
+  Scenario: Create a classroom with "James" as the teacher
+    Given a teacher named "James"
+    When I create a classroom with year 2019, semester 1 and teacher "James"
+    Then I should have "James" as the teacher of this classrom AND "James" should have one classroom on his list AND this classroom should have no students
+
+
+Feature: Add student to classroom
+
+  Scenario: Add "Bond" to the classroom
+    Given a teacher named "James"
+      AND a student named "Bond"
+      AND a classroom with "James" as the teacher
+    When I add "Bond" to the classroom
+    Then I should have one student on the list of students of the classroom AND "Bond" should have one classroom on his list
+
+  Scenario: Add "Bond" twice to the classroom
+    Given a teacher named "James"
+      AND a student named "Bond"
+      AND a classroom with "James" as the teacher and "Bond" on the list of students
+    When I add "Bond" to the classroom
+    Then It should not add "Bond" again to the classroom and I should have one student on the list of students of the classroom AND "Bond" should have one classroom on his list
+
+
+Feature: Create question
+  Scenario: Create a new valid question
+    When I create a new question "Whats your name", with options ["Calvin", "James", "Pedro] and correct_value "Pedro"
+    Then I should have a question object
+
+  Scenario: Create a new question without options
+    When I create a new question "Whats your name", with options no options and without correct_value
+    Then It should not create the question
+
+  Scenario: Create a new question with correct_value not in the options
+    When I create a new question "Whats your name", with options ["Calvin", "James", "Pedro] and correct_value "Jose"
+    Then It should not create the question
+
+
+Feature: Teacher can create quiz
+
+  Scenario: "James" create a quiz for a classroom
+    Given a teacher named "James"
+      AND a classroom with "James" as the teacher
+      AND a question "Whats your name" with options ["Calvin", "James", "Pedro] and correct_value "Pedro"
+    When I create a quiz with "James" as the teacher, the classroom above and the questions ["Whats your name"]
+    Then It should create a quiz with "James" as the teacher AND the classroom above as the classroom and only one question
+
+  Scenario: "James" can create two quizzes identically
+    Given a teacher named "James"
+      AND a classroom with "James" as the teacher
+      AND a question "Whats your name" with options ["Calvin", "James", "Pedro] and correct_value "Pedro"
+    When I create a quiz with "James" as the teacher, the classroom above and the questions ["Whats your name"] twice
+    Then It should create two quizzes with "James" as the teacher AND the classroom above as the classroom and only one question
+
+
+Feature: Assign quiz to student
+  Scenario: A teacher assigns a quiz to a student in a classroom
+    Given a teacher named "James"
+      AND a classroom with "James" as the teacher
+      AND a student named "Bond" in the classroom above
+      AND a question "Whats your name" with options ["Calvin", "James", "Pedro] and correct_value "Pedro"
+      AND a quiz with the questions "Whats your name" for the classroom above
+    When A teacher assigns the quiz above to "Bond"
+    Then the teacher should have the association between the user and the quiz, with grade 0 initially
+
+  Scenario: A teacher tries to assign a quiz to a student not in the classroom
+    Given a teacher named "James"
+      AND a classroom with "James" as the teacher
+      AND a student named "Bond" not in the classroom above
+      AND a question "Whats your name" with options ["Calvin", "James", "Pedro] and correct_value "Pedro"
+      AND a quiz with the questions "Whats your name" for the classroom above
+    When A teacher assigns the quiz above to "Bond"
+    Then the teacher should not have the association between the user and the quiz
+
+Feature: Answer submission
+  Scenario: A student submits valid answers for a quiz
+    Given a teacher named "James"
+      AND a classroom with "James" as the teacher
+      AND a student named "Bond" in classroom above
+      AND a question "Whats your name" with options ["Calvin", "James", "Pedro] and correct_value "Pedro"
+      AND a quiz with the questions "Whats your name" for the classroom above
+      AND a association between "Bond" and the quiz
+    When The "Bond" submit list of answers ["Pedro"]
+    Then The teacher should have access to the answers submitted by "Bond" on this quiz
+
+  Scenario: A student submits an empty answer for a quiz
+    Given a teacher named "James"
+      AND a classroom with "James" as the teacher
+      AND a student named "Bond" in classroom above
+      AND a question "Whats your name" with options ["Calvin", "James", "Pedro] and correct_value "Pedro"
+      AND a quiz with the questions "Whats your name" for the classroom above
+      AND a association between "Bond" and the quiz
+    When The "Bond" submit list of empty answers [""]
+    Then The teacher should have access to the empty answers submitted by "Bond" on this quiz
+
+  Scenario: A student submits invalid answers for a quiz
+      Given a teacher named "James"
+        AND a classroom with "James" as the teacher
+        AND a student named "Bond" in classroom above
+        AND a question "Whats your name" with options ["Calvin", "James", "Pedro] and correct_value "Pedro"
+        AND a quiz with the questions "Whats your name" for the classroom above
+        AND a association between "Bond" and the quiz
+      When The "Bond" submit list of answers ["Joao"]
+      Then The teacher should not have access to the answers submitted by "Bond"
+
+
+Feature: Quiz grading
+  Scenario: A student answered all questions correctly
+    Given a teacher named "James"
+      AND a classroom with "James" as the teacher
+      AND a student named "Bond" in classroom above
+      AND a question "Whats your name" with options ["Calvin", "James", "Pedro] and correct_value "Pedro"
+      AND a quiz with the questions "Whats your name" for the classroom above
+      AND a association between "Bond" and the quiz
+      AND the answers submitted by bond "Pedro"
+    When The teacher grades the quiz
+    Then The grade should be 10
+
+  Scenario: A student answered all questions wrong
+      Given a teacher named "James"
+        AND a classroom with "James" as the teacher
+        AND a student named "Bond" in classroom above
+        AND a question "Whats your name" with options ["Calvin", "James", "Pedro] and correct_value "Pedro"
+        AND a quiz with the questions "Whats your name" for the classroom above
+        AND a association between "Bond" and the quiz
+        AND the answers submitted by bond "James"
+      When The teacher grades the quiz
+      Then The grade should be 0
+
+  Scenario: A teacher have access to the total grade of a student in a semester
+      Given a teacher named "James"
+        AND a classroom with "James" as the teacher
+        AND a student named "Bond" in classroom above
+        AND a question "Whats your name" with options ["Calvin", "James", "Pedro] and correct_value "Pedro"
+        AND a question "Whats my name" with options ["Calvin", "James", "Pedro] and correct_value "James"
+        AND a quiz with the questions "Whats your name" for the classroom above and grade equal to 10
+        AND another quiz with the questions "Whats my name" for the classroom above and grade equal to 0
+      When A teacher calculates the total grade accumulated over a semester for each student on his class
+      Then The teacher should have "James" with total grade on the semester equals to 10
